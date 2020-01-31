@@ -3,7 +3,7 @@
     "vpc": "{{env `BUILD_VPC_ID`}}",
     "subnet": "{{env `BUILD_SUBNET_ID`}}",
     "aws_region": "{{env `AWS_REGION`}}",
-    "ami_name": "Prod-CIS-Latest-AMZN-{{isotime \"02-Jan-06 03_04_05\"}}"
+    "ami_name": "Prod-CIS-Latest-Ubuntu-{{isotime \"02-Jan-06 03_04_05\"}}"
   },
   "builders": [{
     "name": "AWS AMI Builder - CIS",
@@ -11,18 +11,16 @@
     "region": "{{user `aws_region`}}",
     "source_ami_filter": {
       "filters": {
+        "architecture": "x86_64",
         "virtualization-type": "hvm",
-        "name": "amzn-ami-hvm-2017.09.*-gp2",
-        "root-device-type": "ebs"
+        "root-device-type": "ebs",
+        "name": "ubuntu/images/*/ubuntu-bionic-18.04*"
       },
-      "owners": ["137112412989", "591542846629", "801119661308",
-        "102837901569", "013907871322", "206029621532",
-        "286198878708", "443319210888"
-      ],
+      "owners": ["099720109477"],
       "most_recent": true
     },
     "instance_type": "t2.micro",
-    "ssh_username": "ec2-user",
+    "ssh_username": "ubuntu",
     "ami_name": "{{user `ami_name` | clean_ami_name}}",
     "tags": {
       "Name": "{{user `ami_name`}}"
@@ -36,7 +34,7 @@
     "snapshot_tags": {
       "Name": "{{user `ami_name`}}"
     },
-    "ami_description": "Amazon Linux CIS with Cloudwatch Logs agent",
+    "ami_description": "Ubuntu CIS with Cloudwatch Logs agent",
     "associate_public_ip_address": "true",
     "vpc_id": "{{user `vpc`}}",
     "subnet_id": "{{user `subnet`}}"
@@ -44,7 +42,13 @@
   "provisioners": [{
       "type": "shell",
       "inline": [
-        "sudo pip install ansible==2.7.9"
+        "while [ $(grep --count ec2 /etc/apt/sources.list) -eq 0 ] ; do echo 'waiting for cloud-init to update sources.list' ; sleep 1; done",
+        "cat /etc/issue",
+        "uname --all",
+        "sudo apt-get --quiet update",
+        "sudo DEBIAN_FRONTEND=noninteractive apt-get --quiet --assume-yes --no-install-recommends --show-upgraded upgrade",
+        "sudo DEBIAN_FRONTEND=noninteractive apt-get --quiet --assume-yes --no-install-recommends install python3-pip python3-setuptools",
+        "sudo pip3 install 'ansible>=2.8.0,<3.0'"
       ]
     },
     {
