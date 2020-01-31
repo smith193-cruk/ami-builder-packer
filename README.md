@@ -68,7 +68,7 @@ git clone ${git_repo}
 
 Next, we need to copy all files in this repository into the newly cloned Git repository:
 
-* Download [ami-builder-packer ZIP](https://github.com/awslabs/ami-builder-packer/archive/master.zip).
+* Download [ami-builder-packer ZIP](https://github.com/smith193-cruk/ami-builder-packer/archive/master.zip).
 * Extract and copy the contents to the Git repo
 
 Lastly, commit these changes to your AWS CodeCommit repo and watch the AMI being built through the AWS CodePipeline Console:
